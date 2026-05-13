@@ -21,6 +21,16 @@ public class PlayerController : MonoBehaviour
     {
         controller = GetComponent<CharacterController>();
 
+        if (SpawnManager.Instance != null)
+        {
+            Transform spawnPoint = SpawnManager.Instance.GetSpawnPoint();
+
+            controller.enabled = false;
+            transform.position = spawnPoint.position;
+            transform.rotation = spawnPoint.rotation;
+            controller.enabled = true;
+        }
+
         //Lock the mouse to the game screen
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
@@ -31,6 +41,12 @@ public class PlayerController : MonoBehaviour
     {
         MovePlayer();
         LookAround();
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
     }
 
     void MovePlayer()
