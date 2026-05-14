@@ -50,7 +50,7 @@ Meanwhile, the Seeker hunts players using sound, proximity voice chat, and caref
 ## CURRENT DEVELOPMENT STATUS
 
 ### In Progress
-- Multiplayer movement
+- Multiplayer movement ✅
 - Arcade machine interaction system
 - Boredom meter system
 - Directional audio system
