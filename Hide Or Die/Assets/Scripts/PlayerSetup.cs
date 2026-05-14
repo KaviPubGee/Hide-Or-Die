@@ -27,7 +27,7 @@ public class PlayerSetup : NetworkBehaviour
         }
     }
 
-    void ODisable()
+    void OnDisable()
     {
         if (sceneCamera != null)
         {

@@ -47,6 +47,12 @@ public class PlayerController : MonoBehaviour
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
         }
+        else if (Input.GetKeyDown(KeyCode.L))
+        {
+            //Lock the mouse to the game screen
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
     }
 
     void MovePlayer()
