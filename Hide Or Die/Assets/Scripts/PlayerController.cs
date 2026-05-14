@@ -1,6 +1,7 @@
+using Unity.Netcode;
 using UnityEngine;
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : NetworkBehaviour
 {
     [Header("Movement")]
     public float walkSpeed = 5f;
@@ -15,6 +16,13 @@ public class PlayerController : MonoBehaviour
     private CharacterController controller;
     private Vector3 velocity;
     private float xRotation = 0f;
+
+    [Header("Whistle")]
+    public AudioSource audioSource;
+    public AudioClip whistleAudio;
+    public float whistleCooldown = 5f;
+
+    private float nextWhistleTime = 0f;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -41,7 +49,53 @@ public class PlayerController : MonoBehaviour
     {
         MovePlayer();
         LookAround();
+        SetCursorVisibility();
 
+        if (Input.GetKeyDown(KeyCode.Q))
+        {
+            TryWhistle();
+        }
+    }
+
+    void TryWhistle()
+    {
+        if(Time.time < nextWhistleTime)
+        {
+            Debug.Log("Whistle is on cooldown!");
+            return;
+        }
+
+        nextWhistleTime = Time.time + whistleCooldown;
+
+        WhistleServerRpc();
+    }
+
+    [Rpc(SendTo.Server)]
+    private void WhistleServerRpc()
+    {
+        WhistleClientRpc();
+    }
+
+    [Rpc(SendTo.Everyone)]
+    private void WhistleClientRpc()
+    {
+        if (audioSource == null)
+        {
+            Debug.LogWarning("No Audiosource assigned!");
+            return;
+        }
+
+        if(whistleAudio == null)
+        {
+            Debug.LogWarning("No whistle sound assigned");
+            return;
+        }
+
+        audioSource.PlayOneShot(whistleAudio);
+    }
+
+    private static void SetCursorVisibility()
+    {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             Cursor.lockState = CursorLockMode.None;

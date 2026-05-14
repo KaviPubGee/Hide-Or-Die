@@ -6,7 +6,6 @@ public class ArcadeMachine : NetworkBehaviour, IInteractable
     [Header("Audio")]
     public AudioClip[] arcadeMachineSounds;
     public AudioSource audioSource;
-    public AudioClip errorSound;
 
     [Header("Machine Stats")]
     [Range(0f, 1f)]
@@ -35,17 +34,31 @@ public class ArcadeMachine : NetworkBehaviour, IInteractable
         isBroken.OnValueChanged -= OnBrokenChanged;
     }
 
-    public void Interact()
+    public bool CanInteract()
     {
-        InteractServerRpc();
+        return !isBroken.Value;
+    }
+
+    public void StartInteract()
+    {
+        StartInteractRpc();
+    }
+
+    public void StopInteract()
+    {
+        StopInteractRpc();
+    }
+
+    public void CompleteInteract()
+    {
+        CompleteInteractRpc();
     }
 
     [Rpc(SendTo.Server)]
-    private void InteractServerRpc()
+    private void StartInteractRpc()
     {
         if (isBroken.Value)
         {
-            BrokenMachineRpc();
             return;
         }
 
@@ -57,7 +70,24 @@ public class ArcadeMachine : NetworkBehaviour, IInteractable
 
         int randomSoundIndex = Random.Range(0, arcadeMachineSounds.Length);
 
-        PlaySoundRpc(randomSoundIndex);
+        StartSoundRpc(randomSoundIndex);
+    }
+
+    [Rpc(SendTo.Server)]
+    private void StopInteractRpc()
+    {
+        StopSoundRpc();
+    }
+
+    [Rpc(SendTo.Server)]
+    private void CompleteInteractRpc()
+    {
+        if (isBroken.Value)
+        {
+            return;
+        }
+
+        StopSoundRpc();
 
         bool shouldBreak = Random.value <= breakChance;
 
@@ -68,7 +98,7 @@ public class ArcadeMachine : NetworkBehaviour, IInteractable
     }
 
     [Rpc(SendTo.Everyone)]
-    private void PlaySoundRpc(int soundIndex)
+    private void StartSoundRpc(int soundIndex)
     {
         if (audioSource == null)
         {
@@ -88,46 +118,24 @@ public class ArcadeMachine : NetworkBehaviour, IInteractable
             return;
         }
 
-        if (audioSource.isPlaying)
-        {
-            audioSource.Stop();
-        }
-
-        audioSource.PlayOneShot(arcadeMachineSounds[soundIndex]);
+        audioSource.Stop();
+        audioSource.clip = arcadeMachineSounds[soundIndex];
+        audioSource.loop = true;
+        audioSource.Play();
     }
 
     [Rpc(SendTo.Everyone)]
-    private void BrokenMachineRpc()
+    private void StopSoundRpc()
     {
-        Debug.Log("This arcade machine is broken!");
+        if (audioSource == null) return;
 
-        if (audioSource == null)
-        {
-            Debug.LogWarning("No AudioSource assigned");
-            return;
-        }
-
-        if (errorSound == null)
-        {
-            Debug.LogWarning("No error sound assigned");
-            return;
-        }
-
-        if (audioSource.isPlaying)
-        {
-            audioSource.Stop();
-        }
-
-        audioSource.PlayOneShot(errorSound);
+        audioSource.Stop();
+        audioSource.loop = false;
     }
 
     private void OnBrokenChanged(bool oldValue, bool newValue)
     {
         UpdateMachineVisual();
-        if (newValue && audioSource != null)
-        {
-            audioSource.Stop();
-        }
     }
 
     private void UpdateMachineVisual()
