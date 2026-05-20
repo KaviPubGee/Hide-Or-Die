@@ -7,9 +7,16 @@ public class ArcadeMachine : NetworkBehaviour, IInteractable
     public AudioClip[] arcadeMachineSounds;
     public AudioSource audioSource;
 
+    [Header("Audio Delay")]
+    public float soundDelay = 2f;
+    private float nextAllowedSoundTime = 0f;
+
     [Header("Machine Stats")]
     [Range(0f, 1f)]
     public float breakChance = 0.5f;
+
+    [Header("")]
+    public GameObject brokenMachine;
 
     private NetworkVariable<bool> isBroken = new NetworkVariable<bool>(false);
 
@@ -17,6 +24,13 @@ public class ArcadeMachine : NetworkBehaviour, IInteractable
 
     public override void OnNetworkSpawn()
     {
+        if(brokenMachine == null)
+        {
+            Debug.LogWarning("Please assign a broken arcade machine");
+        }
+
+        brokenMachine.SetActive(false);
+
         meshRenderer = GetComponent<MeshRenderer>();
 
         if (IsServer)
@@ -62,6 +76,11 @@ public class ArcadeMachine : NetworkBehaviour, IInteractable
             return;
         }
 
+        if(Time.time < nextAllowedSoundTime)
+        {
+            return;
+        }
+
         if (arcadeMachineSounds.Length == 0)
         {
             Debug.LogWarning("No arcade machine sounds assigned");
@@ -89,6 +108,8 @@ public class ArcadeMachine : NetworkBehaviour, IInteractable
 
         StopSoundRpc();
 
+        nextAllowedSoundTime = Time.time + soundDelay;
+
         bool shouldBreak = Random.value <= breakChance;
 
         if (shouldBreak)
@@ -100,6 +121,11 @@ public class ArcadeMachine : NetworkBehaviour, IInteractable
     [Rpc(SendTo.Everyone)]
     private void StartSoundRpc(int soundIndex)
     {
+        if (audioSource != null && audioSource.isPlaying)
+        {
+            return;
+        }
+
         if (audioSource == null)
         {
             Debug.LogWarning("No AudioSource assigned");
@@ -140,23 +166,15 @@ public class ArcadeMachine : NetworkBehaviour, IInteractable
 
     private void UpdateMachineVisual()
     {
-        if (meshRenderer == null)
-        {
-            meshRenderer = GetComponent<MeshRenderer>();
-        }
-
-        if (meshRenderer == null)
-        {
-            return;
-        }
-
         if (isBroken.Value)
         {
-            meshRenderer.material.color = Color.red;
+            brokenMachine.SetActive(true);
+            this.gameObject.SetActive(false);
         }
         else
         {
-            meshRenderer.material.color = Color.green;
+            brokenMachine.SetActive(false);
+            this.gameObject.SetActive(true);
         }
     }
 }
