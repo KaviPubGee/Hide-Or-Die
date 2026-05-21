@@ -329,8 +329,6 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 128
   interactTime: 8
-  localAudioSource: {fileID: 1385145582141382101}
-  boredomFilledSound: {fileID: 8300000, guid: 829e275598dc1634cbd35c69eb0365cc, type: 3}
 --- !u!1 &8263496713239482467
 GameObject:
   m_ObjectHideFlags: 0
@@ -362,9 +360,9 @@ Transform:
   m_GameObject: {fileID: 8263496713239482467}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: 0}
+  m_LocalPosition: {x: 0, y: 0.713, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 5414870489943786688}
   - {fileID: 6144350736786059830}
@@ -526,7 +524,7 @@ AudioSource:
   SpatializePostEffects: 0
   Priority: 50
   DopplerLevel: 1
-  MinDistance: 1
+  MinDistance: 0.9936232
   MaxDistance: 500
   Pan2D: 0
   rolloffMode: 0
